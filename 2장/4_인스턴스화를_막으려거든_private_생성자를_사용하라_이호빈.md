@@ -22,8 +22,8 @@ public class CustomStringUtils {
     public static boolean isBlank(String input) {
         return input == null || input.trim().isEmpty();
     }
-
-	// ... 다른 static 메서드들
+    
+    // ... 다른 static 메서드들
 }
 
 ```
@@ -40,16 +40,16 @@ public class CustomStringUtils {
 
 ```java
 public class CustomStringUtils {
-
-	private CustomStringUtils() {
+    
+    private CustomStringUtils() {
         throw new IllegalStateException("유틸리티 클래스를 인스턴스화할 수 없습니다!");
     }
 
     public static boolean isBlank(String input) {
         return input == null || input.trim().isEmpty();
     }
-
-	// ... 다른 static 메서드들
+    
+    // ... 다른 static 메서드들
 }
 
 ```
@@ -74,8 +74,8 @@ public final class Math {
 
     public static final double E = 2.7182818284590452354;
     public static final double PI = 3.14159265358979323846;
-
-	// ...
+    
+    // ...
 
     public static int max(int a, int b) {
         return (a >= b) ? a : b;
@@ -92,8 +92,8 @@ public class Arrays {
 
     // Suppresses default constructor, ensuring non-instantiability.
     private Arrays() {}
-
-	// ...
+    
+    // ...
     @SafeVarargs
     @SuppressWarnings("varargs")
     public static <T> List<T> asList(T... a) {
@@ -112,7 +112,7 @@ public class Arrays {
 @Test
 void constructor() throws Exception {
     Constructor<CustomStringUtils> constructor = CustomStringUtils.class
-				.getDeclaredConstructor();
+                                                    .getDeclaredConstructor();
     constructor.setAccessible(true);
 
     assertThatThrownBy(constructor::newInstance)
