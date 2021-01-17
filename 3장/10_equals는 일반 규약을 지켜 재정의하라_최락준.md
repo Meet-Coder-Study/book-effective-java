@@ -47,7 +47,7 @@ public class Student {
 
 ---
 
-## euqlas 재정의의 5가지 일반 규약
+# equals 재정의의 5가지 일반 규약
 
 ## 1. 반사성 (reflexivity)
 
@@ -145,18 +145,19 @@ public class GalaxyNote extends GalaxyS {
         assertThat(g1).isEqualTo(g3);   //fail
     }
 ```
-
+이처럼 g1, g2는 같고 g2,g3도 같지만 g1,g3는 서로 같지 않다.(추이성 위반)
 이를 해결하기 위해 equals를 instanceof 검사 대신 getClass 검사로 바꾸면 추이성을 지킬 수는 있다.
 ```java
 if (o == null || getClass() != o.getClass()) return false;
 ```
-하지만 이는 `리스코프 치환 원칙의 위배`한다는 문제가 있다.
+하지만 이는 `리스코프 치환 원칙의 위배`한다는 문제가 있다.  
+즉 상위 클래스인 GalaxyS는 하위클래스인 GalaxyNote와 getClass가 다르기 때문에 equals는 항상
 
 >리스코프 치환 원칙 : 상위 타입의 자료형은 하위 타입으로 변환되어도 문제 없이 작동해야 한다.
 
 아쉽게도, `클래스를 확장해 새로운 값을 추가하면서 equals 규약을 만족시킬 방법은 존재하지 않는다.`
 
-다만 컴포지션 패턴을 통해 우회할 수 있다.
+다만 컴포지션 패턴을 통해 이를 우회할 수 있다.
 ```java
 public class GalaxyNoteComposition {
     private final GalaxyS galaxyS;
@@ -181,7 +182,7 @@ public class GalaxyNoteComposition {
     }
 }
 ```
-컴포지션 패턴을 통해 GalaxyS를 **상속 대신 private 멤버로** 두고 필요할 경우 GalaxyS의 뷰를 반환하는 메소드를 만든다.   
+컴포지션 패턴을 통해 GalaxyS를 **상속 받는 대신 private 멤버로** 두고 필요할 경우 GalaxyS의 뷰를 반환하는 메소드를 만든다.   
 이후 equals를 재정의할 때는 상위/하위 클래스를 따질 필요 없이 **컴포지션 클래스 내부의 멤버들을 비교**하기만 하면 된다.
 
 ## 4. 일관성(consistency)
