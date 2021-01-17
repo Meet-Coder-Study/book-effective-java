@@ -1,4 +1,4 @@
-# equals는 일반 규약을 지켜 재정의하라
+# 아이템10. equals는 일반 규약을 지켜 재정의하라
 
 ## 핵심정리
 ```
@@ -145,12 +145,12 @@ public class GalaxyNote extends GalaxyS {
         assertThat(g1).isEqualTo(g3);   //fail
     }
 ```
-이처럼 g1, g2는 같고 g2,g3도 같지만 g1,g3는 서로 같지 않다.(추이성 위반)
-이를 해결하기 위해 equals를 instanceof 검사 대신 getClass 검사로 바꾸면 추이성을 지킬 수는 있다.
+이처럼 g1, g2는 같고 g2,g3도 같지만 g1,g3는 서로 같지 않다.(추이성 위반)    
+이를 해결하기 위해 equals를 instanceof 검사 대신 getClass 검사로 바꾸면 추이성을 지킬 수는 있다. 하지만...
 ```java
 if (o == null || getClass() != o.getClass()) return false;
 ```
-하지만 이는 `리스코프 치환 원칙의 위배`한다는 문제가 있다.  
+이는 `리스코프 치환 원칙의 위배`한다는 문제가 있다.  
 즉 상위 클래스인 GalaxyS는 하위클래스인 GalaxyNote와 getClass가 다르기 때문에 equals는 항상
 
 >리스코프 치환 원칙 : 상위 타입의 자료형은 하위 타입으로 변환되어도 문제 없이 작동해야 한다.
