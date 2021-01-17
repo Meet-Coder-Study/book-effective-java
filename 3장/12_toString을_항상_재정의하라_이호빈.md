@@ -2,7 +2,7 @@
 
 ## toString()이 뭘까요?
 
-`toString()`이란 `Object` 클래스의 메서드입니다. 자바에 모든 객체는 [Object 클래스](https://docs.oracle.com/javase/8/docs/api/java/lang/Object.html)를 상속하기 때문에 모든 객체는 `toString()` 메서드를 가지고 있습니다.
+`toString()`이란 `Object` 클래스의 메서드입니다. 자바의 모든 객체는 [Object 클래스](https://docs.oracle.com/javase/8/docs/api/java/lang/Object.html)를 상속하기 때문에 모든 객체는 `toString()` 메서드를 가지고 있습니다.
 
 `toString()`은 아래와 같은 방식으로 객체를 표현하는 문자열을 리턴해줍니다.
 
@@ -21,13 +21,13 @@ public String toString() {
 1. 콘솔로 객체를 확인할 때
     1. `System.out.println()`
     2. `System.out.print()`
-    3. 객체에 문자열을 연결할 때(`SomeObject + ""`)
+    3. 객체에 문자열을 연결(`SomeObject + ""`)
     4. assert 구문 사용 시
     5. 등등...
 2. 디버깅 할 때
 3. 로깅할 때
 
-### `System.out.println()` 메서드 파고들기
+### 참고 : System.out.println() 메서드 파고들기
 
 ```java
 // System.out.println()
@@ -166,7 +166,7 @@ public String toString() {
 }
 ```
 
-### AbstractCollection<E>의 toString() → ArrayList의 상위 추상 클래스
+### AbstractCollection<E>의 toString() → ArrayList의 상위의 상위 추상 클래스
 
 ```java
 public String toString() {
@@ -222,7 +222,7 @@ class ToStringTest {
 }
 ```
 
-### toString() 재정의 시 순환 참조를 조심하자
+### toString() 재정의할 때 순환 참조를 조심하자
 
 IDE에서 지원해주는 `toString()` 혹은 Lombok에 있는 `@ToString` 을 무분별하게 사용하다가는 `StackOverflowError` 가 일어날 수 있습니다.
 
