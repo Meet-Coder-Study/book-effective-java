@@ -4,7 +4,7 @@
 
 ## **자바의 두 가지 객체 소멸자**
 
-### **finalized**
+### **finalizer**
 - 예측할 수 없고 상황에 따라 위험할 수 있어서 일반적으로 불필요함.
 - 오작동, 낮은 성능, 이식성 문제의 원인이 되기도 함.
 - Java 9부터 deprecated API로 지정되어 `cleaner`를 대안으로 사용.
@@ -12,7 +12,33 @@
 ### **cleaner**
 - finalized 보다는 덜 위험하지만 여전히 예측할 수 없고, 느리고, 일반적으로 불필요함
 
-### **자바의 finallized와 cleaner 부작용**
+<details>
+<summary>finalizer 사용 예시 (Java 8 ThreadPoolExecutor)</summary>
+<div markdown="1">
+
+```java
+public class ThreadPoolExecutor extends AbstractExecutorService {
+   ...
+   /**
+     * Invokes {@code shutdown} when this executor is no longer
+     * referenced and it has no threads.
+     */
+   protected void finalize() {
+        SecurityManager sm = System.getSecurityManager();
+        if (sm == null || acc == null) {
+            shutdown();
+        } else {
+            PrivilegedAction<Void> pa = () -> { shutdown(); return null; };
+            AccessController.doPrivileged(pa, acc);
+        }
+    }
+}
+```
+
+</div>
+</details>
+
+### **자바의 finallizer와 cleaner 부작용**
 1. 자바의 finalizer와 cleaner는 C++의 파괴자(destructor)와는 다른 개념이다. 자바에서 접근할 수 없게 된 객체는 가비지 컬렉터가 회수하고 프로그래머는 아무런 작업도 하지 않아도 된다. 만약 `비메모리 자원을 회수`해야 한다면 `try-with-resources`와 `try-finally`를 이용해 해결한다.
 2. `finalizer와 cleaner는 즉시 수행된다는 보장이 없다. 즉, finalizer와 cleaner로는 제때 실행되어야 하는 작업은 절대 할 수 없다.`
    - 예를 들어, 파일 닫기와 같은 작업을 finalizer나 cleaner에게 맡기면 중대한 오류가 발생할 수 있다.
@@ -28,6 +54,7 @@
 7. `finalizer를 사용한 클래스는 finalizer 공격에 노출되어 심각한 보안 문제를 일으킬 수 있다.`
    - 생성자나 직렬화 과정(readObject, readResolve)에서 예외가 발생하면, 이 생성되다 만 객체가 악의적인 하위 클래스의 fializer가 수행될 수 있게 한다.
    - 이 finalizer는 정적 필드에서 자신의 참조를 할당하여 가비지 컬렉터가 수집하지 못하게 막을 수 있다. 이렇게 일그러진 객체가 만들어지고 나면, 이 객체의 메서드를 호출해 애초에 허용되지 않았을 작업을 수행하게 할 수도 있다.
+      - [참고 자료](https://yangbongsoo.tistory.com/8?category=919799)
    - 따라서, `객체 생성을 막으려면 생성자에서 예외를 던지는 것만으로 충분하지만, finalizer가 있다면 final 클래스로 만들어서 하위 클래스를 만들 수 없도록 하거나, final이 아닌 클래스는 아무일도 하지 않는 finalize 메서드를 만들고 final로 선언해야 한다.`
 
 ### **finalizer와 cleaner를 대신할 AutoCloseable**
