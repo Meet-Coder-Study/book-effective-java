@@ -21,13 +21,44 @@
     - 바깥 클래스의 private 멤버에도 접근할 수 있다
     - 다른 점은 일반 클래스와 동일
 ```java
-public class Developer {
-    private String name;
-    private String year;
+class RecommendService {
+    public String getRecommendId(String new_id) {
+        String id = new IdMaker(new_id)
+                .replaceToLowerCase()
+                .replacePattern()
+                .replaceGreaterThan16()
+                .getId();
 
-    public static class Skill {
-        private String type;
-        private int level;
+        return id;
+    }
+
+    private static class IdMaker {
+        private String id;
+
+        IdMaker(String id) {
+            this.id = id;
+        }
+
+        private IdMaker replaceToLowerCase(){
+            id = id.toLowerCase();
+            return this;
+        }
+
+        private IdMaker replacePattern(){
+            id = id.replaceAll("[^a-z0-9]", "");
+            return this;
+        }
+
+        private IdMaker replaceGreaterThan16(){
+            if (id.length() > 15) {
+                id = id.substring(0, 15);
+            }
+            return this;
+        }
+
+        private String getId(){
+            return id;
+        }
     }
 }
 ```
