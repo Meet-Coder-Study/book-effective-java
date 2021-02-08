@@ -27,3 +27,19 @@
 [아이템12. toString을 항상 재정의하라](https://github.com/Blog-Posting/book-effective-java/issues/12) | [이호빈](https://github.com/Blog-Posting/book-effective-java/blob/main/3%EC%9E%A5/12_toString%EC%9D%84_%ED%95%AD%EC%83%81_%EC%9E%AC%EC%A0%95%EC%9D%98%ED%95%98%EB%9D%BC_%EC%9D%B4%ED%98%B8%EB%B9%88.md)
 [아이템13. clone 재정의는 주의해서 진행하라](https://github.com/Blog-Posting/book-effective-java/issues/13) | [김민걸](https://github.com/Blog-Posting/book-effective-java/blob/main/3%EC%9E%A5/13_clone_%EC%9E%AC%EC%A0%95%EC%9D%98%EB%8A%94_%EC%A3%BC%EC%9D%98%ED%95%B4%EC%84%9C_%EC%A7%84%ED%96%89%ED%95%98%EB%9D%BC_%EA%B9%80%EB%AF%BC%EA%B1%B8.md) / [박창원](https://github.com/Blog-Posting/book-effective-java/blob/main/3%EC%9E%A5/13_clone_%EC%9E%AC%EC%A0%95%EC%9D%98%EB%8A%94_%EC%A3%BC%EC%9D%98%ED%95%B4%EC%84%9C_%EC%A7%84%ED%96%89%ED%95%98%EB%9D%BC_%EB%B0%95%EC%B0%BD%EC%9B%90.md)
 [아이템14. Comparable을 구현할지 고려하라](https://github.com/Blog-Posting/book-effective-java/issues/14) | [이주현](https://github.com/Blog-Posting/book-effective-java/blob/main/3%EC%9E%A5/14_Comparable%EC%9D%84_%EA%B5%AC%ED%98%84%ED%95%A0%EC%A7%80_%EA%B3%A0%EB%A0%A4%ED%95%98%EB%9D%BC_%EC%9D%B4%EC%A3%BC%ED%98%84.md)
+
+## 4장. 클래와 인터페이스
+| 아이템 | 발표자료
+:---: | :---:
+[아이템 15. 클래스와 멤버의 접근 권한을 최소화하라](https://github.com/Meet-Coder-Study/book-effective-java/issues/15) | 
+[아이템 16. public 클래스에서는 public 필드가 아닌 접근자 메서드를 사용하라](https://github.com/Meet-Coder-Study/book-effective-java/issues/16) |
+[아이템 17. 변경 가능성을 최소화하라](https://github.com/Meet-Coder-Study/book-effective-java/issues/17) |
+[아이템 18. 상속보다는 컴포지션을 사용하라](https://github.com/Meet-Coder-Study/book-effective-java/issues/18) |
+[아이템 19 상속을 고려해 설계하고 문서화하라. 그러지 않았다면 상속을 금지하라.](https://github.com/Meet-Coder-Study/book-effective-java/issues/19) |
+[아이템 20. 추상 클래스보다는 인터페이스를 우선하라](https://github.com/Meet-Coder-Study/book-effective-java/issues/20) |
+[아이템 21. 인터페이스는 구현하는 쪽을 생각해 설계하라](https://github.com/Meet-Coder-Study/book-effective-java/issues/21) |
+[아이템 22. 인터페이스는 타입을 정의하는 용도로만 사용하라](https://github.com/Meet-Coder-Study/book-effective-java/issues/22) |
+[아이템 23. 태그 달린 클래스보다는 클래스 계층구조를 활용하라](https://github.com/Meet-Coder-Study/book-effective-java/issues/23) |
+[아이템 24. 멤버 클래스는 되도록 static으로 만들라](https://github.com/Meet-Coder-Study/book-effective-java/issues/24) |
+[아이템 25. 톱레벨 클래스는 한 파일에 하나만 담으라](https://github.com/Meet-Coder-Study/book-effective-java/issues/25) | 
+
