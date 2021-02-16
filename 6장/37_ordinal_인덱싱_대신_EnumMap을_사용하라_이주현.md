@@ -142,3 +142,9 @@ public class EnumMapTest {
   - 배열의 인덱스를 얻기 위해 ordinal보단 EnumMap을 사용하라.
   - HashMap의 경우 일정 이상의 자료가 저장되면 자체적으로 resizing을 한다.
   - EnumMap은 시작부터 사이즈가 enum으로 제한되기 때문에 문제가 발생할 수 없다.
+
+<br>
+
+
+### References
+https://www.manty.co.kr/bbs/detail/develop?id=61
