@@ -16,10 +16,10 @@ public enum Text {
 
 ```java
 public class Text {
-    public static final int BOLD = 1 << 0; // 첫 번째 비트 // 1
-    public static final int ITALIC = 1 << 1; // 두 번째 비트 // 2
-    public static final int UNDERLINE = 1 << 2; // 세 번째 비트 // 4
-    public static final int STRIKETHROUGH = 1 << 3; // 네 번째 비트 // 8
+    public static final int BOLD = 1 << 0; // 첫 번째 비트 // 1 // 이진수 : 0001
+    public static final int ITALIC = 1 << 1; // 두 번째 비트 // 2 // 이진수 : 0010
+    public static final int UNDERLINE = 1 << 2; // 세 번째 비트 // 4 // 이진수 : 0100
+    public static final int STRIKETHROUGH = 1 << 3; // 네 번째 비트 // 8 이진수 : 1000
 
     public void applyStyles(int styles) {
         // ...
@@ -32,23 +32,23 @@ public class Text {
 } 
 ```
 
-Enum값들을 비트로 바꿔서 OR 연산을 통해 어떤 걸 썼는지 알 수 있다! 로 생각하시면 좋을 것 같네요. 즉, 비트값에 OR 연산자를 넣어서 Enum 값들을 합쳐서 표현할 수 있습니다.
+즉, 비트값으로 표현된 Enum들에게 OR 비트 연산자(`|`)를 넣어서 Enum 값들을 합쳐서 표현할 수 있습니다.
 
 ```java
-text.applyStyles(BOLD | ITALIC); // 첫 번째와 두 번째 비트 OR 연산으로 3
+text.applyStyles(BOLD | ITALIC); // 첫 번째와 두 번째 OR 비트 연산으로 3
 ```
 
-이렇게 OR 연산자를 통해 만들어진 집합을 비트 필드라고 부릅니다.
+이렇게 OR 비트 연산자를 통해 만들어진 집합을 비트 필드라고 부릅니다.
 
 ## 왜 비트 필드를 사용하면 안 좋을까?
 
 위 예제를 그대로 사용해보겠습니다.
 
 ```java
-text.applyStyles(BOLD | ITALIC); // 첫 번째와 두 번째 비트 OR 연산으로 3
+text.applyStyles(BOLD | ITALIC); // 첫 번째와 두 번째 비트 OR 비트 연산으로 3 // 01 | 10 -> 11
 ```
 
-두 상수 OR 연산의 값으로 3이 나오게 됩니다. 즉, applyStyles() 안에서 3이란 값으로 로직을 실행해야 하는데 3이라는 숫자가 BOLD, ITALIC 이라는 정보를 가지고 있나요? 가지고 있지 않습니다. 해석하기가 어려워지는 거죠.
+두 상수 OR 비트 연산의 값으로 3이 나오게 됩니다. 즉, applyStyles() 안에서 3이란 값으로 로직을 실행해야 하는데 3이라는 숫자가 BOLD, ITALIC 이라는 정보를 가지고 있나요? 가지고 있지 않습니다. 해석하기가 어려워지는 거죠.
 
 게다가 Enum 개수가 늘어날 때마다 그만큼 비트값도 커지므로 자료형으로 int나 long을 선택할 지 정해야 합니다. 
 
