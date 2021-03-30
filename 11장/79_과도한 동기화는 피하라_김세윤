@@ -1,0 +1,322 @@
+# 아이템79. 과도한 동기화는 피하라
+
+## 🤔 과도한 동기화?
+
+- 응답 불가와 안전 실패를 피하려면 동기화 메서드나 동기화 블록 안에서는 제어를 절대로 클라이언트에 양도하면 안된다.
+- 예를들어, 동기화된 영역 안에서는 재정의할 수 있는 메서드를 호출하면 안되고 클라이언트가 넘겨준 함수 객체를 호출해서도 안된다.
+- 이러한 애들은 외계인이라고 생각하면 된다. 즉, 메서드가 무엇을 할지 전혀 모르기 때문이다.
+- 따라서 위에서 말한것 처럼 교착상태나, 예외, 데이터를 훼손할수 있다.
+
+## 코드로 살펴보자
+
+- Observer Pattern으로 구현한 Set을 작성해볼것이다.
+
+    > 객체의 상태 변화를 관찰하는 관찰자들, 즉 옵저버들의 목록을 객체에 등록하여 상태 변화가 있을 때마다 메서드 등을 통해 객체가 직접 목록의 각 옵저버에게 통지하도록 하는 디자인 패턴이다. 주로 분산 이벤트 핸들링 시스템을 구현하는 데 사용된다. 발행/구독 모델로 알려져 있기도 하다.
+
+- Set에 원소가 추가되면 알림을 받을 수 있는 방법이며, 원소가 제거할 때 알람 기능은 구현하지 않았다.
+- ForwardingSet(아이템 18. 상속보단 컴포지션을 사용하라.)를 이용해 예제코드를 작성해보려고 한다.
+
+```java
+import java.util.*;
+
+public class ForwardingSet<E> implements Set<E> {
+    private final Set<E> s;
+
+    public ForwardingSet(Set<E> s) {
+        this.s = s;
+    }
+
+    public void clear() {
+        s.clear();
+    }
+
+    public boolean contains(Object o) {
+        return s.contains(o);
+    }
+
+    public boolean isEmpty() {
+        return s.isEmpty();
+    }
+
+    public int size() {
+        return s.size();
+    }
+
+    public Iterator<E> iterator() {
+        return s.iterator();
+    }
+
+    public boolean add(E e) {
+        return s.add(e);
+    }
+
+    public boolean remove(Object o) {
+        return s.remove(o);
+    }
+
+    public boolean containsAll(Collection<?> c) {
+        return s.containsAll(c);
+    }
+
+    public boolean addAll(Collection<? extends E> c) {
+        return s.addAll(c);
+    }
+
+    public boolean removeAll(Collection<?> c) {
+        return s.removeAll(c);
+    }
+
+    public boolean retainAll(Collection<?> c) {
+        return s.retainAll(c);
+    }
+
+    public Object[] toArray() {
+        return s.toArray();
+    }
+
+    public <T> T[] toArray(T[] a) {
+        return s.toArray(a);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return s.equals(o);
+    }
+
+    @Override
+    public int hashCode() {
+        return s.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return s.toString();
+    }
+}
+```
+
+```java
+public interface SetObserver<E> {
+    void added(ObservableSet<E> set, E element);
+}
+```
+
+```java
+import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
+
+public class ObservableSet<E> extends ForwardingSet<E> {
+    public ObservableSet(Set<E> set) { super(set); }
+
+		private final List<SetObserver<E>> observers
+            = new ArrayList<>();
+
+    public void addObserver(SetObserver<E> observer) {
+        synchronized(observers) {
+            observers.add(observer);
+        }
+    }
+
+    public boolean removeObserver(SetObserver<E> observer) {
+        synchronized(observers) {
+            return observers.remove(observer);
+        }
+    }
+
+    private void notifyElementAdded(E element) {
+        synchronized(observers) {
+            for (SetObserver<E> observer : observers)
+                observer.added(this, element);
+        }
+    }
+
+    @Override 
+		public boolean add(E element) {
+        boolean added = super.add(element);
+        if (added)
+            notifyElementAdded(element);
+        return added;
+    }
+
+    @Override 
+		public boolean addAll(Collection<? extends E> c) {
+        boolean result = false;
+        for (E element : c)
+            result |= add(element);  // notifyElementAdded를 호출한다.
+        return result;
+    }
+}
+```
+
+- 여기서 중요한 메서드는 addObserver와 removeObserver, notifyElementAdded 이다.
+- addObserver와 removeObserver 메소드는 콜백 SetObserver 함수형 인터페이스를 받는다.
+- 문제 없이 동작할것 같다고 생각할 수 있다.
+- 그럼 0 ~ 99까지 출력하는 코드를 작성해보자.
+
+```java
+import java.util.*;
+
+public class Test1 {
+    public static void main(String[] args) {
+        ObservableSet<Integer> set =
+                new ObservableSet<>(new HashSet<>());
+
+        set.addObserver((s, e) -> System.out.println(e));
+
+        for (int i = 0; i < 100; i++)
+            set.add(i);
+    }
+}
+```
+
+- 위 코드는 정상적으로 0 ~ 99까지 출력한다.
+- 그럼 여기서 흥미진진한 시도를 해보자. 값이 23이라면 제거(구독해지)하는 관찰차를 추가하는 것이다.
+
+```java
+import java.util.*;
+
+public class Test1 {
+    public static void main(String[] args) {
+        ObservableSet<Integer> set =
+                new ObservableSet<>(new HashSet<>());
+
+        set.addObserver(new SetObserver<Integer>() {
+            @Override
+            public void added(ObservableSet<Integer> set, Integer element) {
+                System.out.println(element);
+                if  (element == 23) {
+                    set.removeObserver(this);
+                }
+            }
+        });
+
+        for (int i = 0; i < 100; i++)
+            set.add(i);
+    }
+}
+```
+
+- 이때 결과는 과연 어떻게 될까....?
+
+```java
+...
+23
+Exception in thread "main" java.util.ConcurrentModificationException
+```
+
+- 23까지 출력하지만, 그 이후에는 위와 같이 예외를 발생시키게 된다.
+- 그 이유는 added 메서드가 호출이 일어난 시점이 notifyElementAdded가 관찰자들의 리스트를 순회하는 도중이기 때문이다. 즉, added 메서드는 ObservableSet의 removeObserver 메서드를 호출하고, 이 메서드는 다시 observers.remove 메서드를 호출한다.
+- 이때 원소를 제거하려고 하는데, notifyElementAdded 메서드에서 리스트를 순회하는 도중이기 떄문에 허용되지 않은 동작이며, 동기화 블록안에 있어 동시 수정이 일어나지 않도록 보장하지만, 정작 자신이 콜백을 거쳐 되돌아와 수정하는 것까지는 막지 못한다.
+- 이번에도 이상한 시도를 해보자. 구독해지를 하는 removeObserver를 직접 호출하지 않고 다른 스레드에게 맡겨보는 것이다.(쓸데없는 백그라운드 스레드를 사용하는 것이다.)
+
+```java
+import java.util.HashSet;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+
+public class Test1 {
+    public static void main(String[] args) {
+        ObservableSet<Integer> set =
+                new ObservableSet<>(new HashSet<>());
+
+        set.addObserver(new SetObserver<Integer>() {
+            @Override
+            public void added(ObservableSet<Integer> set, Integer element) {
+                System.out.println(element);
+                if  (element == 23) {
+                    ExecutorService executorService = Executors.newSingleThreadExecutor();
+                    try{
+                        executorService.submit(() -> set.removeObserver(this)).get();
+                    }catch (ExecutionException | InterruptedException e){
+                        throw new AssertionError(e);
+                    }finally {
+                        executorService.shutdown();
+                    }
+                }
+            }
+        });
+
+        for (int i = 0; i < 100; i++)
+            set.add(i);
+    }
+}
+```
+
+- 예외를 발생시키지는 않지만 교차상태에 빠진다.
+- 왜냐하면, 관찰자를 잠그려고 시도하지만 락을 얻을 수 없기 때문이다. 메인 스레드가 이미 락을 쥐고 있고 그와 동시에 메인 스레드는 백그라운드 스레드가 관찰자를 제거하기만을 기다리는 중이기 떄문에 교착상태가 발생한다.
+- 사실 위의 예제는 쓸데없지만, 실제 시스템(GUI 툴킷)에서도 동기화된 영역 안에서 외계인 메서드를 호출하여 교착상태에 빠지는 사례가 자주 있다.
+
+### 🐒  불변식이 임시로 깨졌다면
+
+- 자바 언어의 락은 재진입을 허용하므로 교착상태에 빠지지는 않는다. 즉, 예외를 발생시킨 첫 번째 예에서 외계인 메서드를 호출하는 스레드는 이미 락을 쥐고 있으므로 다음번 락 획득도 성공한다.
+- 그러나 락이 제 구실을 하지 못한다. 재진입 가능 락은 객체 지향 멀티스레드 프로그램을 쉽게 구현하게 하지만, 교착 상태가 될 상황을 데이터 훼손으로 변모시킬수도 있기 떄문이다.
+
+## 💪 해결 방법은 무엇인가?
+
+- 외계인 메서드 호출을 동기화 블록 바깥으로 옮겨버리면 된다.
+- 바로 아래 코드처럼 말이다.
+- 이러한 코드를 열린 호출이라고 한다. 얼마나 오래 실행될지 알수 없는데, 동기화 영역 안에서 실행이 된다면 그동안 다른 스레드는 보호된 자원을 사용하지 못하고 대기만 해야 하지만, 아래와 같은 코드는 실패 방지 효과외에도 동시성 효율을 크게 개선해주는 것이다.
+
+```java
+private void notifyElementAdded(E element) {
+        List<SetObserver<E>> snapshot = null;
+        synchronized (observers) {
+            snapshot = new ArrayList<>(observers);
+        }
+        for (SetObserver<E> observer : snapshot)
+            observer.added(this, element);
+    }
+```
+
+- 또한 이것보다 더 좋은 방안은 CopyOnWriteArrayList를 사용하는 것이다. 이 List가 나온 이유는 위와 같은 문제를 해결하기 위해서이다.
+- 즉, 아래와 같이 변경하면 되는것이다.
+
+```java
+private final List<SetObserver<E>> observers = new CopyOnWriteArrayList<>();
+
+public void addObserver(SetObserver<E> observer) {
+    observers.add(observer);
+}
+
+public boolean removeObserver(SetObserver<E> observer) {
+    return observers.remove(observer);
+}
+
+private void notifyElementAdded(E element) {
+for (SetObserver<E> observer : observers)
+		observer.added(this, element);
+
+```
+
+## 🎳 어떤 규칙을 가지고 문제를 해결 해야하는가?
+
+- 동기화 영역에서는 가능한 한 일을 적게 하는 것이다.
+
+## 😼  성능 측면은 어떻게 할 수 있을까?
+
+- 과도한 동기화는 병렬로 실행할 기회를 잃고 모든 코어가 메모리를 일관되고 보기 위한 지연시간이 발생하는게 문제이다.
+- 즉, 가상머신의 코드 최적화를 제한한다는 점도 과도한 동기화의 또 다른 숨은 비용인것이다.
+
+### 그럼 어떻게 해결해야 할까?
+
+- 가변 클래스일때 두 가지 선택지 중 하나를 선택하자.
+    1. 동기화를 하지 않고 외부에서 알아서 동기화 하게 하자
+    2. 동기화를 내부에서 수행해 스레드 안전한 클래스로 만들자
+- 2번째를 선택해야 하는 경우는 외부에서 락을 거는 것보다 동시성을 월등히 개선할 수 있을 때만 사용하자.
+- 그러나 2번을 선택해야 한다면 아래와 같은 기법으로 해결해봐라.
+    - 락 분할
+    - 락 스트라이핑
+    - 비차단 동시성 제어
+
+## 😮 Java API!?
+
+- 자바도 SpringBuffer가 초창기에 내부적으로 동기화를 수행했다. 그래서 StringBuffer가 나오게 되었다.
+- 쓰레드 안전한 Random도 동기화하지 않은 버전인 ThreadLocalRandom으로 대체되었다.
+
+## 결론
+
+- 과도한 동기화는 성능을 떨어뜨리고, 교착상태에 빠뜨리고, 심지어 예측할 수 없는 동작을 낳기도 한다.
+- 교착상태와 데이터 훼손을 피하려면 동기화 영역 안에서 외계인 메서드를 절대 호출하면 안된다. 즉, 동기화 영역 안에서는 최소한 작업만 하자.
+- 가변 클래스를 설계할때는 스스로 동기화해야 할지 고민하자.
