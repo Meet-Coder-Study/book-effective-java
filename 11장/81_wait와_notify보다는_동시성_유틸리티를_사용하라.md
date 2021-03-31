@@ -227,6 +227,75 @@ synchronized: 1709781484ns
 
 이런 문제 때문인지 Java 5부터 제공하는 동시성 유틸리티에서는 `synchronized`를 사용하지 않고 자체에서 최적화하여 성능적으로도 우수한 기능들을 제공한다. 따라서 성능저하 및 사용 복잡성 때문에 Java 5에서 도입된 고수준의 동시성 유틸리티를 사용하는 것을 권장한다.
 
+```java
+public class SyncData {
+    private BlockingQueue<String> packets;
+
+    public SyncData() {
+        this.packets = new ArrayBlockingQueue<>(16);
+    }
+
+    public void send(String packet) {
+        this.packets.offer(packet);
+    }
+
+    public String receive() {
+        try {
+            return packets.take();
+        } catch (InterruptedException e) {
+            throw new RuntimeException();
+        }
+    }
+}
+
+public class Receiver implements Runnable {
+    private SyncData syncData;
+
+    public Receiver(SyncData syncData) {
+        this.syncData = syncData;
+    }
+
+    @Override
+    public void run() {
+        for (String received = syncData.receive(); !"End".equals(received); received = syncData.receive()) {
+            System.out.println(received);
+        }
+    }
+}
+
+public class Sender implements Runnable {
+    private SyncData syncData;
+
+    public Sender(SyncData syncData) {
+        this.syncData = syncData;
+    }
+
+    @Override
+    public void run() {
+        List<String> packets = Arrays.asList(
+                "First packet",
+                "Second packet",
+                "Third packet",
+                "Fourth packet",
+                "End"
+        );
+
+        packets.forEach(packet -> syncData.send(packet));
+    }
+}
+
+public static void main(String[] args) {
+    SyncData data = new SyncData();
+    Thread sender = new Thread(new Sender(data));
+    Thread receiver = new Thread(new Receiver(data));
+
+    sender.start();
+    receiver.start();
+}
+```
+
+wait와 notifyAll로 스레드간 순서를 맞춰줄 필요없이 간단하게 BlockingQueue로 구현할 수 있다.
+
 ## 동시성 유틸리티
 
 `java.util.concurrent` 패키지가 제공하는 고수준 동시성 유틸리티는 다음과 같은 범주로 나눌 수 있다.
