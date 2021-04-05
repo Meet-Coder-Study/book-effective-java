@@ -2,8 +2,7 @@
 
 Serializable은 Java 직렬화를 사용하기 위한 시작점이다. `int`, `long`과 같은 primitive 타입은 Java에서 기본적으로 직렬화를 지원하지만 객체의 경우 직렬화를 사용하기 위해서는 Serializable을 구현해야한다.
 
-> Java 직렬화 참고
-[](https://github.com/Meet-Coder-Study/posting-review/pull/134/files?short_path=afab0a5#diff-afab0a521a171ab1b8fe20acdf103022abc1ef8b0a737a06da06beb7ad9b0093)
+> [Java 직렬화 참고](https://github.com/Meet-Coder-Study/posting-review/pull/134/files?short_path=afab0a5#diff-afab0a521a171ab1b8fe20acdf103022abc1ef8b0a737a06da06beb7ad9b0093)
 
 Serializable을 객체가 구현만 하면 해당 객체는 Java가 지원하는 직렬화 시스템의 지원을 받을 수 있다. 하지만 이는 매우 신중하게 결정해야한다. 사용하기는 편하지만 길게 봤을때 값비싼 일이 될 수 있기 때문이다.
 
