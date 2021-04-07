@@ -1,0 +1,144 @@
+# 아이템 87. 커스텀 직렬화 형태를 고려해보라
+
+## 서론
+
+- 개발 일정에 쫓기면 동작하는 쓰레기 코드를 작성하는 것이 더 좋을 수가 있다.
+- 그러나 클래스가 Serializeable을 구현하고 기본 직렬화 형태를 사용하고, 다음 리팩토링때 변경하려고 하는 계획을 가지고 있다면 기본 직렬화 형태를 버릴수가 없을수가 있다.
+- 가장 좋은 예로 BigInteger이다.
+
+## 🔘 직렬화 선택 기준
+
+### 먼저 고민해보고 괜찮다고 판단될 때만 기본 직렬화 형태를 사용하라.
+
+- 일반적으로 여러분이 직접 설계하더라도 기본 작렬화 형태와 거의 같은 결과가 나올 경우에만 기본 형태를 써야 한다.
+
+### 객체의 물리적 표현과 논리적 내용이 같다면 기본 직렬화 형태라도 무방하다.
+
+- 물리적 표현이란?
+    - 모든 데이터로 Class 전체를 의미한다.
+- 논리적 표현이란?
+    - 실제로 객체를 표현하는 데 쓰이는 데이터
+
+- 예를들어 아래와 같이 사람의 성명을 간략히 표현한 것은 기본 직렬화 형태를 써도 될것이다.
+
+```
+public class Name implements Serializable {
+
+    private final Stirng lastName;
+    private final String firstName;
+    private final String middleName;
+}
+
+```
+
+- 여기서 lastName과 firstName은 null이 아니면 안되며, 불변식을 보장과 보안을 위해 readObject 메서드를 제공해야 할때가 많아 진다.
+    - 이 부분은 아이템 88과 90에서 다뤄질것이기 때문에 패스하겠습니다.
+
+## 🚫 기본 직렬화가 적합지 않는 경우
+
+```jsx
+public final class StringList implements Serializable {
+    private int size = 0;
+    private Entry head = null;
+    private static class Entry implements Serializable {
+        String data;
+        Entry next;
+        Entry previous;
+    }
+    // ... 생략
+}
+```
+
+### 객체의 물리적 표현과 논리적 표현이 차이가 클 경우 기본 직렬화 형태를 사용하면 문제가 발생한다.
+
+1. 공개 API가 현재의 내부 표현 방식에 영구히 묶인다
+    - 즉, 연결 리스트를 더는 사용하지 않더라도 관련 코드를 제거할 수 없다.
+2. 너무 많은 공간을 차지할 수 있다.
+    - 엔트리와 연결 정보는 내부 구현에 해당하니 직렬화 형태에 포함할 가치가 없다.
+3. 시간이 너무 많이 걸릴 수 있다.
+    - 객체 그래프의 위상에 관한 정보가 없으니 그래프를 직접 순회해볼 수 밖에 없다.
+4. 스택 오버플로를 일으킬 수 있다.
+    - 객체 그래프에서도 자칫 StackOverFlowError가 발생할 수 있다.
+
+## ⭕️ 합리적인 직렬화
+
+```jsx
+public final class StringList implements Serializable {
+	private transient int size = 0;// 직렬화 대상에서 제외한다.
+	private transient Entry head = null;
+	// 이번에는 직렬화 하지 않는다.
+	private static class Entry {
+		String data;
+		Entry next;
+		Entry previous;
+	}
+	// 문자열을 리스트에 추가한다.
+	public final void add(String s) { ... }
+	/**
+	* StringList 인스턴스를 직렬화한다.
+	*/
+	private void writeObject(ObjectOutputStream stream)
+	throws IOException {
+		stream.defaultWriteObject();
+		stream.writeInt(size);
+		// 모든 원소를 순서대로 기록한다.
+		for (Entry e = head; e != null; e = e.next) {
+			s.writeObject(e.data);
+		}
+	}
+	private void readObject(ObjectInputStream stream)
+		throws IOException, ClassNotFoundException {
+			stream.defaultReadObject();
+			int numElements = stream.readInt();
+			for (int i = 0; i < numElements; i++) {
+				add((String) stream.readObject());
+			}
+		}
+		// ... 생략
+	}
+```
+
+1. writeObject()와 readObject가 직렬화 형태를 처리한다.
+2. transient 한정자를 사용해 인스턴스 필드가 기본 직렬화 형태에 포함되지 않도록 한다.
+
+주의) 
+
+현재 defaultReadObject()와 defaultWriteObject()을 호출하는데, 이유는 직렬화 명세에서는 이 작업을 무조건 하라고 권장한다. 이유는 향후 릴리스에서 transient가 아닌 인스턴스 필드가 추가되더라도 상호 호환되기 떄문이다.
+
+### 해결점
+
+- 원래 버전의 절반 정도의 공간을 차지하고, 두 배 정도 빠르게 수행된다.
+- 또한 스택 오버플로우가 발생하지 않는다.
+
+## 🤦‍♂️ 더 심각한 경우는?
+
+- StringList를 기본 직렬화 해도 불변식까지 포함해 제대로 복원하기 때문에 정확성은 지킬수 있었다. (그러나 유연성이나 성능은 떨어진다.)
+- 그러나 정확성까지 깨지게 되는건 더 최악이다
+- 가장 좋은 예시가 해시 테이블이다.
+- 해시 테이블의 키는 해시 코드로 결정하는데, 정확성이 떨어진다면 해시 테이블은 훼손된 객체들이 생기게 될 것이다.
+
+## Transient 한정자
+
+- 캐시된 해시 값처럼 다른 필드에서 유도되는 필드
+- JVM이 실행할 때마다 값이 달라지는 필드
+- 즉, 해당 객체의 논리적 상태와 무관한 필드라고 확실할때만 transient 한정자를 생략해야 한다.
+- 또한 역직렬화 될때 기본값으로 초기화가 된다. 따라서 기본값이 필요하다면 기본값을 설정해줘야한다.
+
+## 객체 전체 상태를 읽는 메서드
+
+- 객체 전체 상태를 읽는 메서드에 적용해야 하는 동기화 메커니즘을 직렬화에도 적용해야 한다.
+- 즉, synchronized로 선언하여 스레드 안전하게 만든 객체에 기본 직렬화를 사용하려면 writeObject에 syncronized를 붙여야 한다.
+- 주의해야 할점은 writeObject 메서드 안에서 동기화하고 싶다면 클래스의 다른 부분에서 사용하는 락 순서를 똑같이 해야 한다. 그렇지 않으면 자원 순서 교착상태에 빠질수 있다.
+
+## UID?
+
+- 직렬화 가능 클래스는 모두 직렬 버전인 UID를 설정하는 것이 좋다.
+
+```jsx
+private static final long serialVersionUID = 0204L;
+```
+
+- 클래스 일련 번호를 생성하는 serialver 유틸리티를 사용해도 된다.
+- 또한 꼭 고유할 필요는 없다.
+- 또한 기존 버전 클래스와 호환성을 끊고 싶다면 단순히 직렬 버전 UID만 변경하면 된다.
+- 그러나 구 버전으로 직렬화된 인스턴스들과 호환성을 끊는 경우를 제외하고 직렬 버전 UID를 절대 수정하지 말아야 한다.
