@@ -72,13 +72,13 @@
 	    public static void main(String[] args) throws Exception {
 
 		//룸 청소 1~ 10까지는 clearner를 사용
-		for (int i = 0; i < 11; i++) {
+		for (int i = 1; i <= 10; i++) {
 		    new Room(i);
 		}
 
 
 		//룸 청소 11~ 20까지는 try-with-resource를 이용하여 사용하여 AutoCloseable 활성화
-		for (int i = 11; i < 21; i++) {
+		for (int i = 11; i <= 20; i++) {
 		    try (Room myRoom = new Room(i)) {
 		    }
 		}
