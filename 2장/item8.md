@@ -36,33 +36,34 @@
       
     public class Room implements AutoCloseable {  
       
-	      private static final Cleaner cleaner = Cleaner.create();  
+	     private static final Cleaner cleaner = Cleaner.create();  
 	      
-	      private static class State implements Runnable {  
-	      int numJunkpiles;  
+	     private static class State implements Runnable {  
+	     	int numJunkpiles;  
 	      
-	      State(int numJunkpiles) {  
-		      this.numJunkpiles = numJunkpiles;  
-	      }  
+	     	State(int numJunkpiles) {  
+			this.numJunkpiles = numJunkpiles;  
+	     	}  
 	      
-	      @Override  
-	      public void run() {  
-		      System.out.println("방 청소하자! 방번호는 [" +numJunkpiles +"] 시간은 [" + LocalDateTime.now()+"]"); 
-		      numJunkpiles = 0;  
-	      }  
-	     }  
+	     	@Override  
+	     	public void run() {  
+			System.out.println("방 청소하자! 방번호는 [" +numJunkpiles +"] 시간은 [" + LocalDateTime.now()+"]"); 
+			numJunkpiles = 0;  
+	     	}  
+	     }
+	     
 	     private final State state;  
 	     private final Cleaner.Cleanable cleanable;  
 	      
 	     public Room(int numJunkpiles) {  
-	      state = new State(numJunkpiles);  
-	      cleanable = cleaner.register(this, state);  
-	      }  
+	     	state = new State(numJunkpiles);  
+	     	cleanable = cleaner.register(this, state);  
+	     }  
 	      
-	      @Override  
-	      public void close() throws Exception {  
-	      cleanable.clean();  
-	      }  
+	     @Override  
+	     public void close() throws Exception {  
+	     	cleanable.clean();  
+	     }  
     }
 
 -------
