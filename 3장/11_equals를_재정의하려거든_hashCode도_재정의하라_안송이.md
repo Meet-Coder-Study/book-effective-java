@@ -64,8 +64,8 @@ Object 명세내용의 두번째 항목을 보면, **논리적으로 같은 객�
   - equals () == true 면, 그 객체를 리턴한다.
   - equals () == false 면, null을 리턴한다.
 
-같은 객체인데 hashCode 가 다르면, 해당 객체가 저장된 버킷을 찾을 수 없다.  
-hashCode가 다른데 값이 같은 객체가 없다면(equals()가 false) 원하는 객체를 찾을 수 없다.
+equals() 는 재정의 하고 hashCode()를 재정의 하지 않을 때 → 같은 객체인데 hashCode 가 다르기 때문에 해당 객체가 저장된 버킷을 찾을 수 없다.  
+hashCode()는 재정의하고 equals()를 재정의 하지 않을 때 → hashCode가 같은데 값이 같은 객체가 없으므로(equals()가 false) 원하는 객체를 찾을 수 없다.
 
 ---
 
