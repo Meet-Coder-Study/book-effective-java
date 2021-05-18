@@ -120,17 +120,20 @@ public boolean equals(Object obj) {
             this.color = color;
         }
     
+        //추이성 위반
         @Override
         public boolean equals(Object o) {
             if (!(o instanceof Point))
                 return false;
+          
+            //Point와 비교할 땐 색상을 무시하고 있다.
             if (!(o instanceof ColorPoint))
                 return o.equals(this);
             return super.equals(o) && ((ColorPoint) o).color == color;
         }
     }
     ```
-
+    
     ```java
     ColorPoint redPoint = new ColorPoint(1, 2, Color.RED);
     Point point = new Point(1, 2);
@@ -140,9 +143,9 @@ public boolean equals(Object obj) {
     point.equals(bluePoint); //true
     redPoint.equals(bluePoint); //false
     ```
-
+    
     `redPoint`와 `point`와의 비교에서, 그리고 `point`와 `bluePoint`와의 비교는 색상을 무시했지만, `redPoint`와 `bluePoint`와의 비교에서는 색상을 고려했기 때문에 추이성이 깨졌다.
-
+    
   - 이 문제를 해결하려면 상속대신 컴포지션을 사용하라.
 
     ```java
@@ -214,6 +217,68 @@ public boolean equals(Object obj) {
     ...
   }
   ```
+
+#### intelliJ의 `equals()`와 `hashCode()` 자동완성
+
+![equals_and_hashcode](./images/equals_and_hashcode.png)
+
+```
+[ ] equals()의 매개변수로 하위클래스 허용
+
+일반적으로 Object.equals()의 사양을 준수하진 않지만, 생성된 메서드가 Hibernate와 같은 프록시 하위 클래스를 생성하는 프레임워크에서 올바르게 작동하려면 허용해야 할 수도 있습니다.
+```
+
+```java
+public class Person extends Animal {
+
+  private String name;
+
+  public Person(String name) {
+    this.name = name;
+  }
+}
+
+----------------------------------------------------------------------
+
+//허용 할때 (Object.equals()의 사양 준수X)
+@Override
+public boolean equals(Object o) {
+  if (this == o) {
+    return true;
+  }
+  if (!(o instanceof Person)) { //유일하게 다른 부분
+    return false;
+  }
+  Person person = (Person) o;
+  return Objects.equals(name, person.name);
+}
+
+@Override
+public int hashCode() {
+  return Objects.hash(name);
+}
+
+
+//허용 안할때 (Object.equals()의 사양 준수)
+@Override
+public boolean equals(Object o) {
+  if (this == o) {
+    return true;
+  }
+  if (o == null || getClass() != o.getClass()) { //유일하게 다른 부분
+    return false;
+  }
+  Person person = (Person) o;
+  return Objects.equals(name, person.name);
+}
+
+@Override
+public int hashCode() {
+  return Objects.hash(name);
+}
+```
+
+- 반대 아닌가??
 
 #### 결론
 
