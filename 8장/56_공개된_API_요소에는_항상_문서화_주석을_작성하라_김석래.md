@@ -7,6 +7,8 @@ description: 공개된 API 요소에는 항상 문서화 주석을 작성하라
 - API를 쓸모 있게 하려면 잘 작성된 문서도 곁들여야 한다.
 - 자바에서는 자바독(Javadoc)이라는 유틸리티가 이를 돕는다.
 
+- [Presentation](https://github.com/SeokRae/TIL/blob/master/java/effactive/item56/item56.pdf)
+
 ## Intro
 
 - 자바독은 소스코드 파일에서 문서화 주석(doc comment: 자바독 주석)이라는 특수한 형태로 기술된 설명을 추려 API 문서로 변환해준다.
