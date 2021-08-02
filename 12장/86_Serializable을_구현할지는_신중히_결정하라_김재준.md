@@ -53,7 +53,7 @@ void serializable() throws IOException {
 
 결과
 
-![image-20210407175802931](/Users/kimjajan/Library/Application Support/typora-user-images/image-20210407175802931.png)
+![image](https://user-images.githubusercontent.com/64793712/127806586-bea236d2-fe07-4678-930d-e410aabdd321.png)
 
 
 
@@ -104,7 +104,7 @@ public class Member implements Serializable {
 
 하지만 다음과 같은 오류를 만난다.
 
-![image-20210407181615217](/Users/kimjajan/Library/Application Support/typora-user-images/image-20210407181615217.png)
+![image-20210407181615217](https://tva1.sinaimg.cn/large/008i3skNgy1gt2czic4f4j317x07iwgv.jpg)
 
 해당 예외가 발생한 이유는 모든 직렬화된 클래스는 serialVersionUID 의 이름으로 고유 식별번호를 부여 받는다.
 
@@ -128,7 +128,7 @@ public class Member implements Serializable {
 
 추가한뒤 email 을 추가하지 않은 클래스 Member 를 다시 직렬화 후  Member 클래스에 email 을 추가한뒤 다시 역직렬화 테스트를 돌려보자.
 
-![image-20210407182502133](/Users/kimjajan/Library/Application Support/typora-user-images/image-20210407182502133.png)
+![image-20210407182502133](https://tva1.sinaimg.cn/large/008i3skNgy1gt2d0idbv6j30he024q2x.jpg)
 
 그럼 다음과 같이 성공 할 것이다.
 
@@ -154,7 +154,7 @@ public class Member implements Serializable {
 
 바로 다음과 같은 오류를 만날 것이다.
 
-![image-20210407183249822](/Users/kimjajan/Library/Application Support/typora-user-images/image-20210407183249822.png)
+![image-20210407183249822](https://tva1.sinaimg.cn/large/008i3skNgy1gt2d1xx0khj30nn08wjts.jpg)
 
 이 처럼 초기 버전의에서 Serializable  객체가 구현하고 있다면 추후 버전에서 이전 버전에 영향없이 소스코드 수정은 매우 어렵다.(미래를 예측할 수 없기 때문에) 
 
