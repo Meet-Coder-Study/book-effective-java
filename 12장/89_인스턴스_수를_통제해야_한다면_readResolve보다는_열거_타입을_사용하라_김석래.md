@@ -72,7 +72,7 @@ public class Elvis implements Serializable {
 }
 ```
 
-## Singleton을 보장하는 도둑(stealer) 클래스
+## non-transient 참조 필드를 훔쳐오는 도둑(stealer) 클래스
 
 ```java
 public class ElvisStealer implements Serializable {
@@ -82,7 +82,7 @@ public class ElvisStealer implements Serializable {
     private Object readResolve() {
 		// resolve되기 전의 Elvis 인스턴스의 참조를 저장한다. 
         impersonator = payload;
-		// favoriteSong$ 필드에 맞는 타입의 객체를 반환한다. 
+		// favoriteSongs 필드에 맞는 타입의 객체를 반환한다. 
         return new String[]{"A Fool Such as I"};
     }
 
@@ -94,19 +94,18 @@ public class ElvisStealer implements Serializable {
 public class ElvisImpersonator {
     // 진짜 Elvis 인스턴스로는 만들어질 수 없는 바이트 스트림
 	private static final byte[] serializedForm = {
-            (byte)0xac, (byte)0xed, 0x00, 0x05, 0x73, 0x72, 0x00, 0x05,
-            0x45, 0x6c, 0x76, 0x69, 0x73, (byte)0x84, (byte)0xe6,
-            (byte)0x93, 0x33, (byte)0xc3, (byte)0xf4, (byte)0x8b,
-            0x32, 0x02, 0x00, 0x01, 0x4c, 0x00, 0x0d, 0x66, 0x61, 0x76,
-            0x6f, 0x72, 0x69, 0x74, 0x65, 0x53, 0x6f, 0x6e, 0x67, 0x73,
-            0x74, 0x00, 0x12, 0x4c, 0x6a, 0x61, 0x76, 0x61, 0x2f, 0x6c,
-            0x61, 0x6e, 0x67, 0x2f, 0x4f, 0x62, 0x6a, 0x65, 0x63, 0x74,
-            0x3b, 0x78, 0x70, 0x73, 0x72, 0x00, 0x0c, 0x45, 0x6c, 0x76,
-            0x69, 0x73, 0x53, 0x74, 0x65, 0x61, 0x6c, 0x65, 0x72, 0x00,
-            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00, 0x01,
-            0x4c, 0x00, 0x07, 0x70, 0x61, 0x79, 0x6c, 0x6f, 0x61, 0x64,
-            0x74, 0x00, 0x07, 0x4c, 0x45, 0x6c, 0x76, 0x69, 0x73, 0x3b,
-    		0x78, 0x70, 0x71, 0x00, 0x7e, 0x00, 0x02
+            -84, -19, 0, 5, 115, 114, 0, 20, 107, 114, 46, 115,
+            101, 111, 107, 46, 105, 116, 101, 109, 56, 57, 46, 69,
+            108, 118, 105, 115, 98, -14, -118, -33, -113, -3, -32, 
+		    70, 2, 0, 1, 91, 0, 13, 102, 97, 118, 111, 114, 105, 116, 
+		    101, 83, 111, 110, 103, 115, 116, 0, 19, 91, 76, 106, 97, 
+		    118, 97, 47, 108, 97, 110, 103, 47, 83, 116, 114, 105, 110, 
+		    103, 59, 120, 112, 117, 114, 0, 19, 91, 76, 106, 97, 118, 
+		    97, 46, 108, 97, 110, 103, 46, 83, 116, 114, 105, 110, 103, 
+		    59, -83, -46, 86, -25, -23, 29, 123, 71, 2, 0, 0, 120, 112, 
+		    0, 0, 0, 2, 116, 0, 9, 72, 111, 117, 110, 100, 32, 68, 111, 
+		    103, 116, 0, 16, 72, 101, 97, 114, 116, 98, 114, 101, 97, 107, 
+		    32, 72, 111, 116, 101, 108
     };
     public static void main(String[] args) {
         // ElvisStealer.impersonator를 초기화한 다음,
