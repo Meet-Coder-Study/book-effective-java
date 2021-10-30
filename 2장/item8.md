@@ -5,7 +5,7 @@
 - finalizer : 예측할 수 없고, 상황에 따라 위험할 수 있어 일반적으로 불필요하다.
 - cleaner : finalizer보다 덜 위험하지만, 여전히 예측할 수 없고, 느리고 일반적으로 불필요하다.
 
-> 왜 cleaner보다 finalizer가 덜 위험할까? finalizer에서는 스레드를 통제하지 않기 때문에 경고를 출력하지 않고, 종료해버리지만, cleaner를 사용하는 라이브러리는 자신의 스레드를 통제하기 때문이다.
+> 왜 cleaner가 finalizer보다 덜 위험할까? finalizer에서는 스레드를 통제하지 않기 때문에 경고를 출력하지 않고, 종료해버리지만, cleaner를 사용하는 라이브러리는 자신의 스레드를 통제하기 때문이다.
 
 ## 왜 지양해야 하는가? 
 
@@ -33,54 +33,115 @@
 
   
   ## 책 예제
-
-    import java.lang.ref.Cleaner;  
       
     public class Room implements AutoCloseable {  
       
-	      private static final Cleaner cleaner = Cleaner.create();  
+	     private static final Cleaner cleaner = Cleaner.create();  
 	      
-	      private static class State implements Runnable {  
-	      int numJunkpiles;  
+	     private static class State implements Runnable {  
+	     	int numJunkpiles;  
 	      
-	      State(int numJunkpiles) {  
-		      this.numJunkpiles = numJunkpiles;  
-	      }  
+	     	State(int numJunkpiles) {  
+			this.numJunkpiles = numJunkpiles;  
+	     	}  
 	      
-	      @Override  
-	      public void run() {  
-		      System.out.println("방 청소");  
-		      numJunkpiles = 0;  
-	      }  
-	     }  
+	     	@Override  
+	     	public void run() {  
+			System.out.println("방 청소하자! 방번호는 [" +numJunkpiles +"] 시간은 [" + LocalDateTime.now()+"]"); 
+			numJunkpiles = 0;  
+	     	}  
+	     }
+	     
 	     private final State state;  
 	     private final Cleaner.Cleanable cleanable;  
 	      
 	     public Room(int numJunkpiles) {  
-	      state = new State(numJunkpiles);  
-	      cleanable = cleaner.register(this, state);  
-	      }  
+	     	state = new State(numJunkpiles);  
+	     	cleanable = cleaner.register(this, state);  
+	     }  
 	      
-	      @Override  
-	      public void close() throws Exception {  
-	      cleanable.clean();  
-	      }  
+	     @Override  
+	     public void close() throws Exception {  
+	     	cleanable.clean();  
+	     }  
     }
 
-    public class main {  
-      public static void main(String[] args) throws Exception {  
-	      try (Room myRoom = new Room(7)) {
-		      System.out.println("안녕~");
-		  }
-		  new Room(99);
-		  System.out.println("아무렴~");
-	  }
+-------
+
+    public class CleanerExample {
+	    public static void main(String[] args) throws Exception {
+
+		//룸 청소 1~ 10까지는 clearner를 사용
+		for (int i = 1; i <= 10; i++) {
+		    System.out.println("방 청소 시작! : " + i);
+		    new Room(i);
+		}
+
+
+		//룸 청소 11~ 20까지는 try-with-resource를 이용하여 사용하여 AutoCloseable 활성화
+		for (int i = 11; i <= 20; i++) {
+		    System.out.println("방 청소 시작! : " + i);
+		    try (Room myRoom = new Room(i)) {
+		    }
+		}
+
+		for (int i = 1; i <= 10000; i++) {
+		    int[] a = new int[10000];
+		    try {
+			Thread.sleep(1);
+		    } catch (InterruptedException e) {
+		    }
+		}
+	    }
+    }
+
 
 결과 : 
 
-    안녕~
-    방청소
-    아무렴
+	방 청소 시작! : 0
+	방 청소 시작! : 1
+	방 청소 시작! : 2
+	방 청소 시작! : 3
+	방 청소 시작! : 4
+	방 청소 시작! : 5
+	방 청소 시작! : 6
+	방 청소 시작! : 7
+	방 청소 시작! : 8
+	방 청소 시작! : 9
+	방 청소 시작! : 10
+	방 청소 시작! : 11
+	방 청소했다! 방번호는 [11] 시간은 [2021-05-16T22:46:29.666385]
+	방 청소 시작! : 12
+	방 청소했다! 방번호는 [12] 시간은 [2021-05-16T22:46:29.674797]
+	방 청소 시작! : 13
+	방 청소했다! 방번호는 [13] 시간은 [2021-05-16T22:46:29.674909]
+	방 청소 시작! : 14
+	방 청소했다! 방번호는 [14] 시간은 [2021-05-16T22:46:29.675019]
+	방 청소 시작! : 15
+	방 청소했다! 방번호는 [15] 시간은 [2021-05-16T22:46:29.675124]
+	방 청소 시작! : 16
+	방 청소했다! 방번호는 [16] 시간은 [2021-05-16T22:46:29.675224]
+	방 청소 시작! : 17
+	방 청소했다! 방번호는 [17] 시간은 [2021-05-16T22:46:29.675416]
+	방 청소 시작! : 18
+	방 청소했다! 방번호는 [18] 시간은 [2021-05-16T22:46:29.675480]
+	방 청소 시작! : 19
+	방 청소했다! 방번호는 [19] 시간은 [2021-05-16T22:46:29.675549]
+	방 청소 시작! : 20
+	방 청소했다! 방번호는 [20] 시간은 [2021-05-16T22:46:29.675611]
+	방 청소 시작! : 21
+	방 청소했다! 방번호는 [21] 시간은 [2021-05-16T22:46:29.675674]
+	방 청소했다! 방번호는 [2] 시간은 [2021-05-16T22:46:30.337386]
+	방 청소했다! 방번호는 [0] 시간은 [2021-05-16T22:46:30.337745]
+	방 청소했다! 방번호는 [1] 시간은 [2021-05-16T22:46:30.337849]
+	방 청소했다! 방번호는 [3] 시간은 [2021-05-16T22:46:30.337915]
+	방 청소했다! 방번호는 [4] 시간은 [2021-05-16T22:46:30.337968]
+	방 청소했다! 방번호는 [5] 시간은 [2021-05-16T22:46:30.338021]
+	방 청소했다! 방번호는 [6] 시간은 [2021-05-16T22:46:30.338081]
+	방 청소했다! 방번호는 [7] 시간은 [2021-05-16T22:46:30.338133]
+	방 청소했다! 방번호는 [8] 시간은 [2021-05-16T22:46:30.338216]
+	방 청소했다! 방번호는 [9] 시간은 [2021-05-16T22:46:30.338266]
+	방 청소했다! 방번호는 [10] 시간은 [2021-05-16T22:46:30.338321]
       
    
 
